@@ -1,0 +1,6 @@
+{
+  "appTitle": "c4ai",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
