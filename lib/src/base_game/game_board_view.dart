@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:c4ai/src/base_game/game_board_service.dart';
@@ -6,8 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../settings/settings_view.dart';
 
-var bigText = GoogleFonts.getFont("Xanh Mono").copyWith(fontSize: 90);
-const medText = TextStyle(fontFeatures: [FontFeature.tabularFigures()], fontSize: 45);
+var bigText = GoogleFonts.getFont("Oxygen Mono").copyWith(fontSize: 70);
+const medText = TextStyle(fontFeatures: [FontFeature.tabularFigures()], fontSize: 35);
 
 class GameBoardView extends StatefulWidget {
   const GameBoardView({Key? key}) : super(key: key);
@@ -27,14 +28,20 @@ class _GameBoardViewState extends State<GameBoardView> {
   void initState() {
     super.initState();
     gameBoardService = GameBoardService();
-    player1 = Player(Piece.max, "MAX");
-    player2 = Player(Piece.min, "MIN");
+    player1 = gameBoardService.player1;
+    player2 = gameBoardService.player2;
+    gameBoardService.playPiece(ROW.values.last, COL.three, player1);
+  }
+
+  activePlayerStyle(Player player) {
+    if (gameBoardService.isTurn(player)) {
+      return Colors.green;
+    }
+    return Colors.white;
   }
 
   @override
   Widget build(BuildContext context) {
-    Board board = gameBoardService.playPiece(ROW.values.last, COL.zero, player1);
-
     return Scaffold(
         appBar: AppBar(
           title: const Text('c4ai'),
@@ -56,14 +63,14 @@ class _GameBoardViewState extends State<GameBoardView> {
               children: [
                 Row(
                   children: [
-                    Text("P: " + player1.name + " W: " + player1.streak.toString(), style: medText),
+                    Text("P: " + player1.name + " W: " + player1.streak.toString(), style: medText.apply(color: activePlayerStyle(player1))),
                     const Spacer(),
-                    Text("P: " + player2.name + " W: " + player2.streak.toString(), style: medText),
+                    Text("P: " + player2.name + " W: " + player2.streak.toString(), style: medText.apply(color: activePlayerStyle(player2))),
                     const Spacer(),
                     Text("Move: " + gameBoardService.getMoveCount().toString(), style: medText)
                   ],
                 ),
-                Text(gameBoardService.printBoard(), style: bigText)
+                Text(gameBoardService.printBoard(), style: bigText),
               ],
             )));
   }
