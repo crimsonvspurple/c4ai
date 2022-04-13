@@ -104,10 +104,18 @@ class GameBoardService {
     return _singleton;
   }
 
-  GameBoardService._internal();
+  GameBoardService._internal() {
+    turn = player1;
+  }
 
-  final Board board = List.filled(6, List.filled(7, Piece.empty)); // 6 rows  // 7 columns
+  // final Board board = List.filled(6, List.filled(7, Piece.empty)); // 6 rows  // 7 columns
+  // ⬆️ OK. This can stay for the lulz. Classic reference mistake. All 6 rows referencing same 7 col list. Change in one, whole col changes :(
+  // ⬇️ This is correct version
+  final Board board = List.generate(6, (index) => List.generate(7, (index2) => Piece.empty)); // 6 rows  // 7 columns
   int _move = 0;
+  final Player player1 = Player(Piece.max, "MAX");
+  final Player player2 = Player(Piece.min, "MIN");
+  late Player turn;
 
   int getMoveCount() {
     return _move;
@@ -124,9 +132,13 @@ class GameBoardService {
   }
 
   Board playPiece(ROW row, COL col, Player player) {
+    if (!isTurn(player)) {
+      throw Exception("Not this player's turn!");
+    }
     if (validToPlay(row, col)) {
       board[row.value][col.value] = player.symbol;
       _move++;
+      swapTurn();
       return board;
     }
     throw Exception("Invalid Move!");
@@ -134,6 +146,9 @@ class GameBoardService {
 
   bool validToPlay(ROW row, COL col) {
     ROW currentRow = row;
+    if (!isEmpty(currentRow, col)) {
+      return false;
+    }
     while (currentRow.hasNext()) {
       currentRow = currentRow.next();
       if (isEmpty(currentRow, col)) {
@@ -145,6 +160,18 @@ class GameBoardService {
 
   bool isEmpty(ROW row, COL col) {
     return board[row.value][col.value] == Piece.empty;
+  }
+
+  bool isTurn(Player player) {
+    return turn == player;
+  }
+
+  void swapTurn() {
+    if (turn == player1) {
+      turn = player2;
+    } else {
+      turn = player1;
+    }
   }
 
   String printBoard() {
