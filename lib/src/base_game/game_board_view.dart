@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:ui';
 
 import 'package:c4ai/src/base_game/game_board_service.dart';
@@ -30,7 +29,47 @@ class _GameBoardViewState extends State<GameBoardView> {
     gameBoardService = GameBoardService();
     player1 = gameBoardService.player1;
     player2 = gameBoardService.player2;
-    gameBoardService.playPiece(ROW.values.last, COL.three, player1);
+    gameBoardService.playPiece(ROW.five, COL.three, player1);
+    gameBoardService.playPiece(ROW.four, COL.three, player2);
+    gameBoardService.playPiece(ROW.three, COL.three, player1);
+    gameBoardService.playPiece(ROW.two, COL.three, player2);
+    gameBoardService.playPiece(ROW.one, COL.three, player1);
+    gameBoardService.playPiece(ROW.zero, COL.three, player2);
+    gameBoardService.playPiece(ROW.five, COL.two, player1);
+    gameBoardService.playPiece(ROW.five, COL.one, player2);
+    gameBoardService.playPiece(ROW.five, COL.five, player1);
+    gameBoardService.playPiece(ROW.five, COL.four, player2);
+    gameBoardService.playPiece(ROW.four, COL.four, player1);
+    gameBoardService.playPiece(ROW.three, COL.four, player2);
+    gameBoardService.playPiece(ROW.two, COL.four, player1);
+    gameBoardService.playPiece(ROW.four, COL.one, player2);
+    gameBoardService.playPiece(ROW.four, COL.two, player1);
+    gameBoardService.playPiece(ROW.one, COL.four, player2);
+    gameBoardService.playPiece(ROW.three, COL.two, player1);
+    gameBoardService.playPiece(ROW.two, COL.two, player2);
+    gameBoardService.playPiece(ROW.one, COL.two, player1);
+    gameBoardService.playPiece(ROW.five, COL.six, player2);
+    gameBoardService.playPiece(ROW.four, COL.five, player1);
+    gameBoardService.playPiece(ROW.three, COL.one, player2);
+    gameBoardService.playPiece(ROW.two, COL.one, player1);
+    gameBoardService.playPiece(ROW.three, COL.five, player2);
+    gameBoardService.playPiece(ROW.two, COL.five, player1);
+    gameBoardService.playPiece(ROW.one, COL.five, player2);
+    gameBoardService.playPiece(ROW.one, COL.one, player1);
+    gameBoardService.playPiece(ROW.four, COL.six, player2);
+    gameBoardService.playPiece(ROW.three, COL.six, player1);
+    gameBoardService.playPiece(ROW.two, COL.six, player2);
+    gameBoardService.playPiece(ROW.one, COL.six, player1);
+    gameBoardService.playPiece(ROW.zero, COL.six, player2);
+    gameBoardService.playPiece(ROW.zero, COL.two, player1);
+    gameBoardService.playPiece(ROW.five, COL.zero, player2);
+    gameBoardService.playPiece(ROW.four, COL.zero, player1);
+    gameBoardService.playPiece(ROW.three, COL.zero, player2);
+    gameBoardService.playPiece(ROW.zero, COL.four, player1);
+    gameBoardService.playPiece(ROW.zero, COL.five, player2);
+    gameBoardService.playPiece(ROW.zero, COL.one, player1);
+    gameBoardService.playPiece(ROW.two, COL.zero, player2);
+    gameBoardService.playPiece(ROW.one, COL.zero, player1);
   }
 
   activePlayerStyle(Player player) {
