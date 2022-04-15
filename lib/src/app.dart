@@ -74,9 +74,9 @@ class MyApp extends StatelessWidget {
                   case SampleItemListView.routeName:
                     return const SampleItemListView();
                   case GameBoardView.routeName:
-                    return GameBoardView();
+                    return const GameBoardView();
                   default:
-                    return GameBoardView();
+                    return const GameBoardView();
                 }
               },
             );
