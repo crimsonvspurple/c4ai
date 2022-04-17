@@ -1,0 +1,1 @@
+enum RESULT { NONE, DRAW, MIN, MAX }

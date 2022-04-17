@@ -1,91 +1,8 @@
-enum Piece {
-  empty("-"),
-  min("O"),
-  max("X");
+import 'package:c4ai/src/base_game/models/piece.dart';
+import 'package:c4ai/src/base_game/models/result.dart';
+import 'package:c4ai/src/base_game/models/slot.dart';
 
-  final String value;
-
-  const Piece(this.value);
-}
-
-enum ROW {
-  zero(0),
-  one(1),
-  two(2),
-  three(3),
-  four(4),
-  five(5);
-
-  final int value;
-
-  const ROW(this.value);
-
-  bool hasPrevious() {
-    return this != zero;
-  }
-
-  ROW previous() {
-    if (!hasPrevious()) {
-      throw Exception("no previous row");
-    }
-    return ROW.values.elementAt(value - 1);
-  }
-
-  bool hasNext() {
-    return this != five;
-  }
-
-  ROW next() {
-    if (!hasNext()) {
-      throw Exception("no next row");
-    }
-    return ROW.values.elementAt(value + 1);
-  }
-}
-
-enum COL {
-  zero(0),
-  one(1),
-  two(2),
-  three(3),
-  four(4),
-  five(5),
-  six(6);
-
-  final int value;
-
-  const COL(this.value);
-
-  bool hasPrevious() {
-    return this != zero;
-  }
-
-  COL previous() {
-    if (!hasPrevious()) {
-      throw Exception("no previous col");
-    }
-    return COL.values.elementAt(value - 1);
-  }
-
-  bool hasNext() {
-    return this != six;
-  }
-
-  COL next() {
-    if (!hasNext()) {
-      throw Exception("no next col");
-    }
-    return COL.values.elementAt(value + 1);
-  }
-}
-
-class Player {
-  final Piece symbol;
-  final String name;
-  int streak;
-
-  Player(this.symbol, this.name, {this.streak = 0});
-}
+import 'models/player.dart';
 
 typedef Board = List<List<Piece>>;
 
@@ -124,19 +41,19 @@ class GameBoardService {
   Board reset() {
     for (var row in board) {
       for (Piece item in row) {
-        item = Piece.empty;
+        item = Piece.empty; // possible bug of reference
       }
     }
     _move = 0;
     return board;
   }
 
-  Board playPiece(ROW row, COL col, Player player) {
+  Board playPiece(Slot slot, Player player) {
     if (!isTurn(player)) {
       throw Exception("Not this player's turn!");
     }
-    if (validToPlay(row, col)) {
-      board[row.value][col.value] = player.symbol;
+    if (validToPlay(slot)) {
+      _setPiece(slot, player.symbol);
       _move++;
       swapTurn();
       return board;
@@ -144,22 +61,30 @@ class GameBoardService {
     throw Exception("Invalid Move!");
   }
 
-  bool validToPlay(ROW row, COL col) {
-    ROW currentRow = row;
-    if (!isEmpty(currentRow, col)) {
+  bool validToPlay(Slot slot) {
+    Slot currentSlot = Slot(slot.row, slot.col);
+    if (!isEmpty(currentSlot)) {
       return false;
     }
-    while (currentRow.hasNext()) {
-      currentRow = currentRow.next();
-      if (isEmpty(currentRow, col)) {
+    while (currentSlot.canDown()) {
+      currentSlot = currentSlot.down();
+      if (isEmpty(currentSlot)) {
         return false;
       }
     }
     return true;
   }
 
-  bool isEmpty(ROW row, COL col) {
-    return board[row.value][col.value] == Piece.empty;
+  bool isEmpty(Slot slot) {
+    return getPiece(slot) == Piece.empty;
+  }
+
+  Piece getPiece(Slot slot) {
+    return board[slot.row.value][slot.col.value];
+  }
+
+  void _setPiece(Slot slot, Piece piece) {
+    board[slot.row.value][slot.col.value] = piece;
   }
 
   bool isTurn(Player player) {
@@ -172,6 +97,39 @@ class GameBoardService {
     } else {
       turn = player1;
     }
+  }
+
+  // RESULT checkWin() { // whole board
+  //
+  // }
+  //
+  RESULT checkWin(Slot slot) {
+    Piece piece = getPiece(slot);
+    RESULT result;
+    switch (piece) {
+      case Piece.max:
+        result = RESULT.MAX;
+        break;
+      case Piece.min:
+        result = RESULT.MIN;
+        break;
+      default:
+        throw Exception("Cant check win on empty");
+    }
+    List<Slot> connect4 = List.empty(growable: true);
+    Slot currentSlot = Slot(slot.row, slot.col);
+    connect4.add(slot);
+    while (currentSlot.canLeft()) {
+      currentSlot = currentSlot.left();
+      if (getPiece(currentSlot) == piece) {
+        connect4.add(currentSlot);
+        if (connect4.length == 4) {
+          return result;
+        }
+        // currentSlot = left;
+      } else {}
+    }
+    return result;
   }
 
   String printBoard() {
