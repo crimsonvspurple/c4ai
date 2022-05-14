@@ -5,7 +5,9 @@ import 'package:c4ai/src/base_game/models/piece.dart';
 import 'package:c4ai/src/base_game/models/result.dart';
 import 'package:c4ai/src/base_game/models/slot.dart';
 
+import 'models/col.dart';
 import 'models/player.dart';
+import 'models/row.dart';
 
 typedef Board = List<List<Piece>>;
 
@@ -37,6 +39,7 @@ class GameBoardService {
   final Player player2 = Player(Piece.min, "MIN");
   late Player turn;
 
+
   int getMoveCount() {
     return _move;
   }
@@ -49,6 +52,16 @@ class GameBoardService {
     }
     _move = 0;
     return board;
+  }
+
+  Board playColumn(COL col) {
+    Player player = turn;
+    for (var row in ROW.values.reversed) {
+      if (validToPlay(Slot(row, col))) {
+        return playPiece(Slot(row, col), player);
+      }
+    }
+    throw Exception("Can't play this column");
   }
 
   Board playPiece(Slot slot, Player player) {
@@ -65,6 +78,9 @@ class GameBoardService {
   }
 
   bool validToPlay(Slot slot) {
+    // if (result != RESULT.NONE)  {
+    //   return false;
+    // }
     Slot currentSlot = Slot(slot.row, slot.col);
     if (!isEmpty(currentSlot)) {
       return false;
@@ -87,6 +103,7 @@ class GameBoardService {
   }
 
   void _setPiece(Slot slot, Piece piece) {
+    print("playing ${slot} to ${piece}");
     board[slot.row.value][slot.col.value] = piece;
   }
 
@@ -102,10 +119,20 @@ class GameBoardService {
     }
   }
 
-  // RESULT checkWin() { // whole board
+  // RESULT checkWinAll() { // whole board
   //
   // }
-  //
+  RESULT checkWinByCol(COL col) {
+    for (var row in ROW.values) {
+      if (isEmpty(Slot(row, col))) {
+        continue;
+      } else {
+        return checkWin(Slot(row, col));
+      }
+    }
+    throw Exception("Col empty");
+  }
+
   RESULT checkWin(Slot slot) {
     Piece piece = getPiece(slot);
     RESULT result = RESULT.NONE;
@@ -114,48 +141,60 @@ class GameBoardService {
     }
     Slot currentSlot = Slot(slot.row, slot.col);
 
-    Map<WinDirection, Map<Side, List<Function>>> functionMap = {
-      WinDirection.leftRight: {
-        Side.one: [currentSlot.canLeft, currentSlot.left],
-        Side.other: [currentSlot.canRight, currentSlot.right]
-      },
-      WinDirection.upDown: {
-        Side.one: [currentSlot.canUp, currentSlot.up],
-        Side.other: [currentSlot.canDown, currentSlot.down]
-      },
-      WinDirection.upLeftDownRight: {
-        Side.one: [currentSlot.canUpLeft, currentSlot.upLeft],
-        Side.other: [currentSlot.canDownRight, currentSlot.downRight]
-      },
-      WinDirection.upRightDownLeft: {
-        Side.one: [currentSlot.canUpRight, currentSlot.upRight],
-        Side.other: [currentSlot.canDownLeft, currentSlot.downLeft]
-      }
-    };
-
-    for (var sides in functionMap.values) {
+    for (var sides in WinDirection.values) {
       ListQueue<Slot> connect4 = ListQueue(4);
+      Map<WinDirection, Map<Side, List<Function>>> functionMap = {
+        WinDirection.leftRight: {
+          Side.one: [currentSlot.canLeft, currentSlot.left],
+          Side.other: [currentSlot.canRight, currentSlot.right]
+        },
+        WinDirection.upDown: {
+          Side.one: [currentSlot.canUp, currentSlot.up],
+          Side.other: [currentSlot.canDown, currentSlot.down]
+        },
+        WinDirection.upLeftDownRight: {
+          Side.one: [currentSlot.canUpLeft, currentSlot.upLeft],
+          Side.other: [currentSlot.canDownRight, currentSlot.downRight]
+        },
+        WinDirection.upRightDownLeft: {
+          Side.one: [currentSlot.canUpRight, currentSlot.upRight],
+          Side.other: [currentSlot.canDownLeft, currentSlot.downLeft]
+        }
+      };
+
       connect4.add(slot);
-      while (sides[Side.one]![0]()) {
-        currentSlot = sides[Side.one]![1]();
+      while (functionMap[sides]![Side.one]![0]()) {
+        print(functionMap[sides]![Side.one]![0]());
+        currentSlot = functionMap[sides]![Side.one]![1]();
         if (getPiece(currentSlot) == piece) {
           connect4.addFirst(currentSlot);
           if (connect4.length == 4) {
             print("Winning Combo: ");
             connect4.forEach(print);
+            if (piece == Piece.max) {
+              player1.streak += 1;
+            } else {
+              player2.streak += 1;
+            }
             return piece == Piece.max ? RESULT.MAX : RESULT.MIN;
           }
         } else {
           break;
         }
       }
-      while (sides[Side.other]![0]()) {
-        currentSlot = sides[Side.other]![1]();
+      while (functionMap[sides]![Side.other]![0]()) {
+        currentSlot = functionMap[sides]![Side.other]![1]();
         if (getPiece(currentSlot) == piece) {
           connect4.addLast(currentSlot);
           if (connect4.length == 4) {
             print("Winning Combo: ");
             connect4.forEach(print);
+            if (piece == Piece.max) {
+              print("streak?");
+              player1.streak += 1;
+            } else {
+              player2.streak += 1;
+            }
             return piece == Piece.max ? RESULT.MAX : RESULT.MIN;
           }
         } else {
