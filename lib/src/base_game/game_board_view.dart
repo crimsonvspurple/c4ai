@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../settings/settings_view.dart';
 import 'models/col.dart';
+import 'models/piece.dart';
 import 'models/player.dart';
 import 'models/row.dart';
 
@@ -103,18 +104,70 @@ class _GameBoardViewState extends State<GameBoardView> {
         body: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              children: [
+              children: <Widget>[
                 Row(
                   children: [
                     Text("P: " + player1.name + " W: " + player1.streak.toString(), style: medText.apply(color: activePlayerStyle(player1))),
                     const Spacer(),
                     Text("P: " + player2.name + " W: " + player2.streak.toString(), style: medText.apply(color: activePlayerStyle(player2))),
                     const Spacer(),
-                    Text("Move: " + gameBoardService.getMoveCount().toString(), style: medText)
+                    Text("Move: " + gameBoardService.getMoveCount().toString(), style: medText),
+                    const Spacer(),
+                    Text("Win: " + gameBoardService.checkWin(Slot(ROW.one, COL.zero)).name, style: medText)
                   ],
                 ),
-                Text(gameBoardService.printBoard(), style: bigText),
+                // Text(gameBoardService.printBoard(), style: bigText),
+                Padding(
+                  padding: const EdgeInsets.all(100),
+                  child: Container(
+                    decoration: BoxDecoration(border: Border.all(color: Colors.white10, width: 10, style: BorderStyle.solid)),
+                    child: Column(
+                      children: <Widget>[
+                        for (var row in gameBoardService.board) ...[
+                          Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: <Widget>[
+                            for (var item in row) ...[BoardSlot(piece: item)]
+                          ])
+                        ]
+                      ],
+                    ),
+                  ),
+                )
               ],
             )));
+  }
+}
+
+class BoardSlot extends StatelessWidget {
+  Color color = Colors.white70;
+
+  BoardSlot({Key? key, required Piece piece}) : super(key: key) {
+    switch (piece) {
+      case Piece.max:
+        color = Colors.redAccent;
+        break;
+      case Piece.min:
+        color = Colors.yellowAccent;
+        break;
+      default:
+        color = Colors.white70;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      Container(
+        height: 100,
+        width: 100,
+        color: Colors.blueGrey,
+      ),
+      Positioned.fill(
+        top: 5,
+        left: 5,
+        right: 5,
+        bottom: 5,
+        child: Container(decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
+      )
+    ]);
   }
 }

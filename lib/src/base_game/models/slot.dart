@@ -94,4 +94,9 @@ class Slot {
     }
     return Slot(row.next(), col.next());
   }
+
+  @override
+  String toString() {
+    return "( ${row.value}, ${col.value} )";
+  }
 }

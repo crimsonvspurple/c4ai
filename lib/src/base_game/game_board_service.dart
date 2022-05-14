@@ -1,3 +1,6 @@
+import 'dart:collection';
+
+import 'package:c4ai/src/base_game/models/Direction.dart';
 import 'package:c4ai/src/base_game/models/piece.dart';
 import 'package:c4ai/src/base_game/models/result.dart';
 import 'package:c4ai/src/base_game/models/slot.dart';
@@ -26,7 +29,7 @@ class GameBoardService {
   }
 
   // final Board board = List.filled(6, List.filled(7, Piece.empty)); // 6 rows  // 7 columns
-  // ⬆️ OK. This can stay for the lulz. Classic reference mistake. All 6 rows referencing same 7 col list. Change in one, whole col changes :(
+  // ⬆️ OK. This can stay. Classic reference mistake. All 6 rows referencing same 7 col list. Change in one, whole col changes :(
   // ⬇️ This is correct version
   final Board board = List.generate(6, (index) => List.generate(7, (index2) => Piece.empty)); // 6 rows  // 7 columns
   int _move = 0;
@@ -105,31 +108,63 @@ class GameBoardService {
   //
   RESULT checkWin(Slot slot) {
     Piece piece = getPiece(slot);
-    RESULT result;
-    switch (piece) {
-      case Piece.max:
-        result = RESULT.MAX;
-        break;
-      case Piece.min:
-        result = RESULT.MIN;
-        break;
-      default:
-        throw Exception("Cant check win on empty");
+    RESULT result = RESULT.NONE;
+    if (piece == Piece.empty) {
+      throw Exception("Cant check win on empty");
     }
-    List<Slot> connect4 = List.empty(growable: true);
     Slot currentSlot = Slot(slot.row, slot.col);
-    connect4.add(slot);
-    while (currentSlot.canLeft()) {
-      currentSlot = currentSlot.left();
-      if (getPiece(currentSlot) == piece) {
-        connect4.add(currentSlot);
-        if (connect4.length == 4) {
-          return result;
+
+    Map<WinDirection, Map<Side, List<Function>>> functionMap = {
+      WinDirection.leftRight: {
+        Side.one: [currentSlot.canLeft, currentSlot.left],
+        Side.other: [currentSlot.canRight, currentSlot.right]
+      },
+      WinDirection.upDown: {
+        Side.one: [currentSlot.canUp, currentSlot.up],
+        Side.other: [currentSlot.canDown, currentSlot.down]
+      },
+      WinDirection.upLeftDownRight: {
+        Side.one: [currentSlot.canUpLeft, currentSlot.upLeft],
+        Side.other: [currentSlot.canDownRight, currentSlot.downRight]
+      },
+      WinDirection.upRightDownLeft: {
+        Side.one: [currentSlot.canUpRight, currentSlot.upRight],
+        Side.other: [currentSlot.canDownLeft, currentSlot.downLeft]
+      }
+    };
+
+    for (var sides in functionMap.values) {
+      ListQueue<Slot> connect4 = ListQueue(4);
+      connect4.add(slot);
+      while (sides[Side.one]![0]()) {
+        currentSlot = sides[Side.one]![1]();
+        if (getPiece(currentSlot) == piece) {
+          connect4.addFirst(currentSlot);
+          if (connect4.length == 4) {
+            print("Winning Combo: ");
+            connect4.forEach(print);
+            return piece == Piece.max ? RESULT.MAX : RESULT.MIN;
+          }
+        } else {
+          break;
         }
-        // currentSlot = left;
-      } else {}
+      }
+      while (sides[Side.other]![0]()) {
+        currentSlot = sides[Side.other]![1]();
+        if (getPiece(currentSlot) == piece) {
+          connect4.addLast(currentSlot);
+          if (connect4.length == 4) {
+            print("Winning Combo: ");
+            connect4.forEach(print);
+            return piece == Piece.max ? RESULT.MAX : RESULT.MIN;
+          }
+        } else {
+          break;
+        }
+      }
     }
-    return result;
+
+    return RESULT.NONE;
   }
 
   String printBoard() {
